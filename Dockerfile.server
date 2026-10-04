@@ -1,0 +1,13 @@
+# Signaling server only (used by render.yaml).
+# Render injects PORT; the server prefers SIGNALING_PORT, then PORT.
+FROM node:24-alpine
+WORKDIR /app
+ENV NODE_ENV=production \
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+EXPOSE 4000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s \
+  CMD wget -q -O - "http://127.0.0.1:${PORT:-4000}/health" || exit 1
+CMD ["npm", "run", "server:start"]

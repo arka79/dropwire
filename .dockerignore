@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.env
+.env.*
+!.env.example
+tests/e2e-artifacts
+coverage
+*.log
+.DS_Store
+AGENTS.md
+CLAUDE.md

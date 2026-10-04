@@ -1,0 +1,27 @@
+# Render blueprint: the Dropwire signaling server (Option A in README/Deploy).
+# The web app deploys separately to Vercel — set CORS_ORIGINS below to the
+# Vercel URL once the project exists, and fill TURN_* in the dashboard.
+services:
+  - type: web
+    name: dropwire-signaling
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.server
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: TRUST_PROXY
+        value: "1"
+      - key: LOG_LEVEL
+        value: info
+      - key: STUN_SERVERS
+        value: stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302
+      - key: CORS_ORIGINS
+        value: https://REPLACE-WITH-VERCEL-URL.vercel.app
+      # Set these in the Render dashboard (sync: false keeps them out of git):
+      - key: TURN_SERVERS
+        sync: false
+      - key: TURN_USERNAME
+        sync: false
+      - key: TURN_CREDENTIAL
+        sync: false
