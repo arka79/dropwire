@@ -1,113 +1,120 @@
-import { QrCode, MousePointerClick, Share2 } from "lucide-react";
-import { Reveal } from "@/components/reveal";
+import { ScanLine, SquareArrowOutUpRight } from "lucide-react";
+import { IsoBlock } from "./iso-block";
+import { ScrollPiece } from "./scroll-piece";
 
 const STEPS = [
   {
     number: "01",
-    icon: MousePointerClick,
-    title: "Create a room",
-    body: "One click gives you a short code and a shareable link. Rooms expire on their own.",
+    title: "Open a room",
+    body: "The server mints a code and keeps the door list. Nothing else about the transfer exists on our side.",
     art: (
-      <span className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-2.5 py-1.5 font-mono text-[13px] tracking-[0.18em] text-ink">
-        NOVA-7K2P
-      </span>
+      <div className="flex items-center gap-3">
+        <ScrollPiece className="h-20 w-28 shrink-0">
+          <IsoBlock pattern="code" className="size-full" />
+        </ScrollPiece>
+        <span className="inline-flex items-center gap-2 border border-white/25 px-2 py-1 font-mono text-[12px] tracking-[0.16em] text-lamp">
+          NOVA-7K2P
+          <SquareArrowOutUpRight className="size-3 text-chassis-ink/50" aria-hidden />
+        </span>
+      </div>
     ),
   },
   {
     number: "02",
-    icon: Share2,
-    title: "Share it",
-    body: "Send the link, or let the other device scan the QR code. Nothing to install, no login.",
+    title: "Hand over the code",
+    body: "The other device joins with the link, the code, or a scanned QR. No install, no account, no permission dialog to fight.",
     art: (
-      <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">
-        <QrCode className="size-4 text-ink-2" aria-hidden />
-        scan to join
-      </span>
+      <div className="flex items-center gap-3">
+        <ScrollPiece className="h-20 w-28 shrink-0" rotateYFrom={-26} yFrom={12}>
+          <IsoBlock pattern="qr" className="size-full" />
+        </ScrollPiece>
+        <span className="font-mono text-[11px] text-chassis-ink/55">scan to join</span>
+      </div>
     ),
   },
   {
     number: "03",
-    icon: MousePointerClick,
-    title: "Drop files",
-    body: "Bytes travel on a direct connection between the two browsers. The server only handles the handshake.",
+    title: "Send the bytes",
+    body: "The handshake completes and the two browsers open a data channel. Frames cross directly; the server watches nothing.",
     art: (
-      <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">
-        <span className="size-1.5 rounded-full bg-live" aria-hidden />
-        direct · webrtc datachannel
-      </span>
+      <div className="flex items-center gap-3">
+        <ScrollPiece className="h-20 w-28 shrink-0" rotateYFrom={-48} yFrom={22}>
+          <IsoBlock packet className="size-full" />
+        </ScrollPiece>
+        <span className="font-mono text-[11px] text-chassis-ink/55">direct connection</span>
+      </div>
     ),
   },
 ];
 
-export function SectionHeading({
-  eyebrow,
-  title,
-  lede,
-}: {
-  eyebrow: string;
-  title: string;
-  lede?: string;
-}) {
-  return (
-    <div className="max-w-2xl">
-      <p className="label">{eyebrow}</p>
-      <h2 className="mt-3 text-[clamp(1.6rem,3.4vw,2.25rem)] font-semibold tracking-[-0.02em] text-ink">
-        {title}
-      </h2>
-      {lede ? (
-        <p className="mt-3 text-[15px] leading-relaxed text-ink-2">{lede}</p>
-      ) : null}
-    </div>
-  );
-}
-
 export function HowItWorks() {
   return (
-    <section id="how" className="border-t border-line">
-      <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-        <Reveal>
-          <SectionHeading
-            eyebrow="how it works"
-            title="Three steps. No setup."
-            lede="The whole product is one flow: make a room, share it, move bytes."
-          />
-        </Reveal>
+    <section id="how" className="relative overflow-hidden bg-chassis text-chassis-ink">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-72 opacity-25 [perspective:520px]"
+      >
+        <div
+          className="absolute inset-x-0 bottom-[-45%] top-[28%] origin-bottom [transform:rotateX(64deg)]"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(to right, rgba(247,246,238,0.3) 0 1px, transparent 1px 72px), repeating-linear-gradient(to bottom, rgba(247,246,238,0.3) 0 1px, transparent 1px 72px)",
+            maskImage: "linear-gradient(to top, black, transparent)",
+            WebkitMaskImage: "linear-gradient(to top, black, transparent)",
+          }}
+        />
+      </div>
 
-        <ol className="mt-10 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3">
-          {STEPS.map((step, index) => (
-            <Reveal key={step.number} delay={index * 0.08} className="bg-surface">
-              <li className="flex h-full flex-col gap-3 p-6">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] tracking-[0.2em] text-ink-3">
-                    {step.number}
-                  </span>
-                  <step.icon className="size-4 text-ink-3" aria-hidden />
-                </div>
-                <h3 className="text-base font-semibold tracking-tight text-ink">
-                  {step.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-ink-2">{step.body}</p>
-                <div className="mt-auto pt-4">{step.art}</div>
-              </li>
-            </Reveal>
+      <div className="relative mx-auto w-full max-w-[1400px] px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-chassis-ink/45">
+              the protocol
+            </p>
+            <h2 className="display mt-4 text-[clamp(2rem,4.6vw,3.4rem)] text-chassis-ink">
+              Three moves,
+              <br />
+              no middleman.
+            </h2>
+          </div>
+          <p className="max-w-sm text-sm leading-relaxed text-chassis-ink/60">
+            A room is a rendezvous point, not a mailbox. Once the two browsers
+            meet, our job is done and they talk without us.
+          </p>
+        </div>
+
+        <ol className="mt-14 border-t border-white/15">
+          {STEPS.map((step) => (
+            <li
+              key={step.number}
+              className="grid gap-3 border-b border-white/15 py-8 sm:grid-cols-[3rem_1fr] lg:grid-cols-[4rem_1fr_1.15fr_auto] lg:items-start lg:gap-8"
+            >
+              <span className="font-mono text-[11px] text-chassis-ink/35">
+                {step.number}
+              </span>
+              <h3 className="text-[21px] font-bold tracking-[-0.03em] text-chassis-ink sm:text-[24px]">
+                {step.title}
+              </h3>
+              <p className="max-w-md text-sm leading-relaxed text-chassis-ink/60">
+                {step.body}
+              </p>
+              <div className="mt-1 justify-self-start lg:mt-1.5 lg:justify-self-end">
+                {step.art}
+              </div>
+            </li>
           ))}
         </ol>
 
-        <Reveal delay={0.1}>
-          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-line bg-surface px-5 py-4">
-            <span className="label">cross device</span>
-            {["laptop → phone", "phone → laptop", "laptop → laptop", "phone → phone"].map(
-              (pair) => (
-                <span
-                  key={pair}
-                  className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-2"
-                >
-                  {pair}
-                </span>
-              ),
-            )}
-          </div>
-        </Reveal>
+        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-chassis-ink/40">
+          <span className="flex items-center gap-2 text-chassis-ink/60">
+            <ScanLine className="size-3.5" aria-hidden />
+            any two devices
+          </span>
+          <span>laptop to phone</span>
+          <span>phone to laptop</span>
+          <span>laptop to laptop</span>
+          <span>phone to phone</span>
+        </div>
       </div>
     </section>
   );

@@ -31,14 +31,14 @@ export function QrModal({
           description="Point a phone camera at the code — the other browser joins the same room."
         />
 
-        <div className="mx-auto w-fit rounded-xl border border-line bg-white p-4 text-neutral-900">
+        <div className="mx-auto w-fit rounded-[3px] border border-line bg-white p-4 text-neutral-900">
           <QRCodeSVG
             value={link}
             size={208}
             level="M"
             marginSize={0}
             bgColor="#ffffff"
-            fgColor="#17160f"
+            fgColor="#111318"
             title={`QR code for room ${roomId}`}
           />
         </div>

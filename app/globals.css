@@ -3,47 +3,60 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --canvas: #f6f3ed;
-  --surface: #fffdfa;
-  --surface-2: #ede9e1;
-  --line: #e0d9cd;
-  --line-strong: #c9c0b1;
-  --ink: #17160f;
-  --ink-2: #57524a;
-  --ink-3: #8d867c;
-  --brand: #ff5a1f;
-  --brand-hover: #ef4d12;
-  --brand-ink: #1c0e05;
-  --brand-soft: rgba(255, 90, 31, 0.1);
-  --signal: #46699b;
-  --signal-soft: rgba(70, 105, 155, 0.12);
-  --live: #5f9e12;
-  --live-soft: rgba(95, 158, 18, 0.13);
-  --danger: #c23c26;
-  --danger-soft: rgba(194, 60, 38, 0.1);
-  --grid-line: rgba(23, 22, 15, 0.055);
+  --canvas: #f4f4ef;
+  --surface: #ffffff;
+  --surface-2: #eaeae2;
+  --line: #d9d9cf;
+  --line-strong: #adada0;
+  --ink: #0b0b09;
+  --ink-2: #45453d;
+  --ink-3: #6b6b61;
+  --brand: #ffd400;
+  --brand-hover: #f0c800;
+  --brand-ink: #14140c;
+  --brand-text: #6b5200;
+  --brand-soft: rgba(255, 212, 0, 0.2);
+  --lamp: #ffd400;
+  --chassis: #0d0d0a;
+  --chassis-ink: #f7f6ee;
+  --chassis-line: rgba(247, 246, 238, 0.16);
+  --live: #0a6b3d;
+  --live-soft: rgba(10, 107, 61, 0.1);
+  --danger: #b3261e;
+  --danger-soft: rgba(179, 38, 30, 0.09);
+  --signal: #2f4a7a;
+  --signal-soft: rgba(47, 74, 122, 0.09);
+  --grid-line: rgba(11, 11, 9, 0.07);
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 .dark {
-  --canvas: #0e0e10;
-  --surface: #16161a;
-  --surface-2: #1d1d22;
-  --line: #2a2a31;
-  --line-strong: #3b3b44;
-  --ink: #f1eee8;
-  --ink-2: #a8a29a;
-  --ink-3: #77716a;
-  --brand: #ff6b35;
-  --brand-hover: #ff804f;
-  --brand-ink: #1a0d04;
-  --brand-soft: rgba(255, 107, 53, 0.13);
-  --signal: #8fb0e0;
-  --signal-soft: rgba(143, 176, 224, 0.13);
-  --live: #a3e635;
-  --live-soft: rgba(163, 230, 53, 0.12);
-  --danger: #f0705c;
-  --danger-soft: rgba(240, 112, 92, 0.12);
-  --grid-line: rgba(241, 238, 232, 0.05);
+  --canvas: #0c0c09;
+  --surface: #131310;
+  --surface-2: #1b1b16;
+  --line: #2b2b24;
+  --line-strong: #45453a;
+  --ink: #f4f3e9;
+  --ink-2: #b3b2a5;
+  --ink-3: #8a8980;
+  --brand: #ffdf2b;
+  --brand-hover: #ffe75a;
+  --brand-ink: #14140c;
+  --brand-text: #ffdf2b;
+  --brand-soft: rgba(255, 223, 43, 0.14);
+  --lamp: #ffd400;
+  --chassis: #1a1a13;
+  --chassis-ink: #f7f6ee;
+  --chassis-line: rgba(247, 246, 238, 0.14);
+  --live: #5fe0a0;
+  --live-soft: rgba(95, 224, 160, 0.11);
+  --danger: #ff8f7a;
+  --danger-soft: rgba(255, 143, 122, 0.11);
+  --signal: #a9bff0;
+  --signal-soft: rgba(169, 191, 240, 0.11);
+  --grid-line: rgba(244, 243, 233, 0.06);
 }
 
 @theme inline {
@@ -58,13 +71,18 @@
   --color-brand: var(--brand);
   --color-brand-hover: var(--brand-hover);
   --color-brand-ink: var(--brand-ink);
+  --color-brand-text: var(--brand-text);
   --color-brand-soft: var(--brand-soft);
-  --color-signal: var(--signal);
-  --color-signal-soft: var(--signal-soft);
+  --color-lamp: var(--lamp);
+  --color-chassis: var(--chassis);
+  --color-chassis-ink: var(--chassis-ink);
+  --color-chassis-line: var(--chassis-line);
   --color-live: var(--live);
   --color-live-soft: var(--live-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-signal: var(--signal);
+  --color-signal-soft: var(--signal-soft);
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", sans-serif;
@@ -101,54 +119,73 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--brand);
+    outline: 2px solid var(--ink);
     outline-offset: 2px;
+  }
+
+  .dark :focus-visible {
+    outline-color: var(--brand);
   }
 }
 
 @layer components {
+  /* Headlines carry the identity: heavy, tight, near-flush leading. */
+  .display {
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.9;
+    text-wrap: balance;
+  }
+
   .label {
     font-family: var(--font-geist-mono), ui-monospace, monospace;
-    font-size: 10px;
-    line-height: 1;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    font-size: 11px;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
     color: var(--ink-3);
   }
 
+  /* Instrument panels are square-ish; only dialogs keep a soft radius. */
   .panel {
     background-color: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 6px;
   }
 
-  .grid-field {
-    background-image: linear-gradient(
-        to right,
-        var(--grid-line) 1px,
-        transparent 1px
-      ),
-      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-    background-size: 56px 56px;
+  .ruler {
+    height: 7px;
+    background-image: repeating-linear-gradient(
+      90deg,
+      currentColor 0 1px,
+      transparent 1px 12px
+    );
+    background-repeat: repeat-x;
+    background-size: 100% 4px;
+    background-position: left top;
+    opacity: 0.35;
   }
 
-  .noise-field {
-    position: relative;
+  /* The seam between the two halves of a room. */
+  .seam {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--line-strong) 0 5px,
+      transparent 5px 11px
+    );
+    background-size: 1px 100%;
+    background-repeat: no-repeat;
   }
 
-  .noise-field::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.4;
-    mix-blend-mode: multiply;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
-  }
-
-  .dark .noise-field::after {
-    mix-blend-mode: screen;
-    opacity: 0.3;
+  /* Rubber stamp on the transfer receipt. */
+  .stamp {
+    display: inline-block;
+    transform: rotate(-2.5deg);
+    border: 2px solid currentColor;
+    padding: 0.3rem 0.65rem;
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
   .mono {
@@ -165,33 +202,26 @@
   0%,
   100% {
     opacity: 1;
-    transform: scale(1);
   }
   50% {
-    opacity: 0.45;
-    transform: scale(0.86);
+    opacity: 0.35;
   }
 }
 
-@keyframes dw-sweep {
-  from {
-    transform: translateX(-100%);
+@keyframes dw-blink {
+  0%,
+  100% {
+    opacity: 1;
   }
-  to {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes dw-dash {
-  to {
-    stroke-dashoffset: -24;
+  50% {
+    opacity: 0.2;
   }
 }
 
 @keyframes dw-rise {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -200,24 +230,15 @@
 }
 
 .animate-rise {
-  animation: dw-rise 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: dw-rise 0.3s var(--ease-out) both;
 }
 
 .animate-pulse-dot {
   animation: dw-pulse 1.6s ease-in-out infinite;
 }
 
-.sweep::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--brand-soft),
-    transparent
-  );
-  animation: dw-sweep 1.8s linear infinite;
+.animate-blink {
+  animation: dw-blink 1.4s steps(2, end) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

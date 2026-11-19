@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FolderOpen, MousePointerClick, Paperclip } from "lucide-react";
+import { FolderOpen, Paperclip, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { filesFromDataTransfer } from "@/lib/files/collect";
 
@@ -75,60 +75,80 @@ export function DropZone({
     if (files.length > 0) onFiles(files);
   };
 
-  return (
-    <div
-      onDragOver={(e) => {
-        if (ready) e.preventDefault();
-      }}
-      onDrop={(e) => void handleDrop(e)}
-      className={[
-        "relative overflow-hidden rounded-xl border-2 border-dashed transition-all duration-200",
-        dragActive && ready
-          ? "border-brand bg-brand-soft scale-[1.005]"
-          : ready
-            ? "border-line-strong bg-surface"
-            : "border-line bg-surface/60",
-      ].join(" ")}
-      aria-label="File drop zone"
-    >
-      <div className="pointer-events-none absolute inset-0 opacity-[0.7]">
-        <div className="grid-field absolute inset-0 [mask-image:radial-gradient(80%_80%_at_50%_50%,black,transparent)]" />
-      </div>
+  const active = dragActive && ready;
 
-      <div className="relative flex flex-col items-center gap-4 px-5 py-10 text-center sm:px-8 sm:py-14">
+  return (
+    <div className="relative">
+      {/* Tray stack: the pad sits on two offset sheets. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-2 bottom-[-6px] top-2 border border-white/15 bg-chassis/50"
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-1 bottom-[-3px] top-1 border border-white/20 bg-chassis/80"
+      />
+
+      <div
+        onDragOver={(e) => {
+          if (ready) e.preventDefault();
+        }}
+        onDrop={(e) => void handleDrop(e)}
+        className={[
+          "relative overflow-hidden border-2 border-dashed transition-colors duration-200",
+          "shadow-[0_24px_45px_-28px_rgba(0,0,0,0.8)]",
+          active
+            ? "border-brand bg-brand text-brand-ink"
+            : ready
+              ? "border-lamp/55 bg-chassis text-chassis-ink"
+              : "border-chassis-line bg-chassis text-chassis-ink",
+        ].join(" ")}
+        aria-label="File drop zone"
+      >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.12]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+        }}
+      />
+
+      <div className="relative flex flex-col items-center gap-4 px-5 py-9 text-center sm:px-7 sm:py-12">
         <span
           className={[
-            "flex size-12 items-center justify-center rounded-full border transition-colors",
-            dragActive && ready
-              ? "border-brand bg-brand text-brand-ink"
-              : "border-line-strong bg-surface-2 text-ink-2",
+            "flex size-10 items-center justify-center border transition-colors duration-200",
+            active
+              ? "border-brand-ink bg-brand-ink text-brand"
+              : "border-white/25 bg-white/5 text-lamp",
           ].join(" ")}
           aria-hidden
         >
-          <Paperclip className="size-5" />
+          <Paperclip className="size-4" />
         </span>
 
         <div className="space-y-1.5">
-          <p className="text-lg font-semibold tracking-tight text-ink">
-            {dragActive && ready
-              ? "Release to send"
+          <p className="text-[20px] font-bold tracking-[-0.03em]">
+            {active
+              ? "Release to transmit"
               : ready
-                ? "Drop files here"
-                : "Waiting for someone to join"}
+                ? "Drop a file on the pad"
+                : "Nobody on the other end"}
           </p>
-          <p className="mx-auto max-w-sm text-sm leading-relaxed text-ink-2">
+          <p className="mx-auto max-w-sm text-sm leading-relaxed opacity-60">
             {ready
-              ? "Files are chunked and sent directly to the other device. Nothing is uploaded."
+              ? "Frames go straight to the other browser. Nothing is uploaded and nothing is kept."
               : waitingLabel}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Button
-            variant="secondary"
+            variant="primary"
             size="sm"
             disabled={!ready}
-            icon={<MousePointerClick className="size-3.5" aria-hidden />}
+            icon={<Upload className="size-3.5" aria-hidden />}
             onClick={() => fileInput.current?.click()}
           >
             Choose files
@@ -137,6 +157,7 @@ export function DropZone({
             variant="secondary"
             size="sm"
             disabled={!ready}
+            className="border-white/25 bg-white/5 text-chassis-ink hover:bg-white/10"
             icon={<FolderOpen className="size-3.5" aria-hidden />}
             onClick={() => folderInput.current?.click()}
           >
@@ -145,10 +166,26 @@ export function DropZone({
         </div>
 
         {!folderButtonReady ? (
-          <p className="text-[11px] text-ink-3">
+          <p className="font-mono text-[10px] opacity-45">
             Folder picking works in Chrome, Edge and Safari 15+.
           </p>
         ) : null}
+      </div>
+
+      <div
+        className={[
+          "relative flex flex-wrap items-center justify-between gap-2 border-t border-dashed px-4 py-2.5 font-mono text-[10px]",
+          active ? "border-brand-ink/25" : "border-white/20",
+        ].join(" ")}
+      >
+        <span className="flex items-center gap-2 opacity-80">
+          <span
+            className={`size-1.5 ${ready ? "bg-lamp" : "bg-lamp/50 animate-blink"}`}
+            aria-hidden
+          />
+          {ready ? "wire ready" : "no peer yet"}
+        </span>
+        <span className="opacity-45">64 KB frames · direct only</span>
       </div>
 
       <input
@@ -175,6 +212,7 @@ export function DropZone({
           e.target.value = "";
         }}
       />
+      </div>
     </div>
   );
 }

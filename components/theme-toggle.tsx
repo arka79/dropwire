@@ -25,8 +25,10 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       aria-label={`Switch to ${next} mode`}
       title={`Switch to ${next} mode`}
       className={[
-        "inline-flex size-9 items-center justify-center rounded-md border border-line",
-        "bg-surface text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink",
+        "inline-flex size-9 items-center justify-center rounded-[3px] border border-line",
+        "bg-surface text-ink-2 transition-[background-color,border-color,color,transform]",
+        "duration-150 ease-[var(--ease-out)] hover:border-line-strong hover:bg-surface-2",
+        "hover:text-ink active:scale-[0.96]",
         className,
       ].join(" ")}
     >

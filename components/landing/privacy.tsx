@@ -1,109 +1,114 @@
-import { Minus } from "lucide-react";
-import { Reveal } from "@/components/reveal";
-import { SectionHeading } from "./how-it-works";
-
-const POINTS = [
+const CLAUSES = [
   {
-    title: "Your files aren't uploaded to our servers.",
-    body: "Rooms, room codes and connection handshakes are all the server ever holds. File bytes never arrive.",
+    title: "There is no upload step",
+    body: "Chunks leave one data channel and land in the other browser's file sink. No copy is written to a server disk.",
   },
   {
-    title: "Transfers happen directly between connected browsers whenever possible.",
-    body: "When a network blocks direct connections, a TURN relay forwards already-encrypted traffic without storing it.",
+    title: "Direct unless the network forbids it",
+    body: "STUN finds a path. If a symmetric NAT blocks it, a TURN relay forwards already-encrypted traffic without storing it.",
   },
   {
-    title: "Rooms disappear automatically.",
-    body: "Every room expires after a few hours, and sooner when everyone leaves. Nothing is written to a database.",
+    title: "Rooms expire on their own",
+    body: "Six hours by default, sooner if the host idles out. An empty room is collected after a short grace period.",
   },
   {
-    title: "No accounts, no transfer history.",
+    title: "No account, no history",
     body: "Your device name lives in this browser's storage. Clear it and nothing anywhere remembers you.",
   },
 ];
 
-const SPEC: Array<[string, string]> = [
-  ["room code", "NOVA-7K2P"],
-  ["room lifetime", "6 hours"],
-  ["host idle timeout", "60 minutes"],
-  ["max devices", "10"],
-  ["file storage", "none"],
-  ["transport", "webrtc datachannel"],
-  ["signaling", "socket.io"],
-  ["data encryption", "dtls-sctp"],
+const RECEIPT: Array<[string, string, boolean]> = [
+  ["room", "NOVA-7K2P", false],
+  ["route", "direct / relayed", false],
+  ["frames", "64 KB", false],
+  ["encryption", "dtls-sctp", false],
+  ["devices", "10 max", false],
+  ["server copy", "none", true],
 ];
+
+function Receipt() {
+  return (
+    <div className="relative mx-auto w-full max-w-[26rem] [perspective:1300px]">
+      {/* Sheets underneath, so the receipt reads as paper on a desk. */}
+      <div
+        aria-hidden
+        className="absolute inset-x-4 top-4 h-full border border-line-strong bg-surface-2/70"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-x-2 top-2 h-full border border-line bg-surface"
+      />
+
+      <div className="relative border border-line-strong bg-surface p-5 font-mono text-[12px] shadow-[0_24px_50px_-30px_rgba(0,0,0,0.55)] [transform-style:preserve-3d] lg:[transform:rotateY(-8deg)_rotateX(1.5deg)]">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.16em] text-ink-3">
+            dropwire / transfer receipt
+          </p>
+          <p className="mt-2 text-[15px] tracking-[0.1em] text-ink">NOVA-7K2P</p>
+        </div>
+        <span className="border border-line px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-ink-3">
+          example
+        </span>
+      </div>
+
+      <div className="my-4 border-t border-dashed border-line-strong" aria-hidden />
+
+      <dl className="space-y-2.5">
+        {RECEIPT.map(([key, value, strong]) => (
+          <div key={key} className="flex items-baseline justify-between gap-4">
+            <dt className="text-ink-3">{key}</dt>
+            <dd className={strong ? "font-medium text-live" : "text-ink"}>{value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="my-4 border-t border-dashed border-line-strong" aria-hidden />
+
+      <div className="flex items-end justify-between gap-4">
+        <p className="max-w-[15rem] text-[10px] leading-relaxed text-ink-3">
+          The room holds a code, a door list and a handshake. File bytes are not
+          part of this document.
+        </p>
+        <span className="stamp shrink-0 text-danger">not stored</span>
+      </div>
+      </div>
+    </div>
+  );
+}
 
 export function PrivacySection() {
   return (
-    <section id="privacy" className="border-t border-line bg-surface/40">
-      <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
-          <Reveal>
-            <SectionHeading
-              eyebrow="privacy"
-              title="What happens to your files."
-              lede="No slogans, just the mechanics: the server coordinates rooms, your browsers move the data."
-            />
-            <div className="mt-8 rounded-xl border border-line bg-surface p-5">
-              <p className="label mb-3">server sees</p>
-              <ul className="space-y-2 font-mono text-[12px] text-ink-2">
-                <li className="flex items-center justify-between gap-3 border-b border-line pb-2">
-                  <span>room: NOVA-7K2P</span>
-                  <span className="text-ink-3">room state</span>
-                </li>
-                <li className="flex items-center justify-between gap-3 border-b border-line pb-2">
-                  <span>peer a → peer b</span>
-                  <span className="text-ink-3">sdp + ice</span>
-                </li>
-                <li className="flex items-center justify-between gap-3">
-                  <span>file bytes</span>
-                  <span className="text-live">never</span>
-                </li>
-              </ul>
-            </div>
-          </Reveal>
+    <section id="privacy" className="border-b border-line">
+      <div className="mx-auto grid w-full max-w-[1400px] gap-12 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:gap-16 lg:px-12 lg:py-24">
+        <div>
+          <p className="label">privacy</p>
+          <h2 className="display mt-4 text-[clamp(2rem,4.2vw,3.2rem)] text-ink">
+            The server keeps the room, not the file.
+          </h2>
+          <p className="mt-5 max-w-md text-[15px] leading-relaxed text-ink-2">
+            Not a policy, a manifest. Here is exactly what our process handles,
+            and what never leaves the two browsers.
+          </p>
 
-          <Reveal delay={0.08}>
-            <ul className="divide-y divide-line border-y border-line">
-              {POINTS.map((point) => (
-                <li key={point.title} className="flex gap-4 py-5">
-                  <Minus
-                    className="mt-1 size-4 shrink-0 text-brand"
-                    aria-hidden
-                  />
-                  <div>
-                    <p className="text-[15px] font-medium leading-snug text-ink">
-                      {point.title}
-                    </p>
-                    <p className="mt-1.5 text-sm leading-relaxed text-ink-2">
-                      {point.body}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
+          <ul className="mt-10 border-t border-line">
+            {CLAUSES.map((clause) => (
+              <li
+                key={clause.title}
+                className="grid gap-2 border-b border-line py-5 sm:grid-cols-[1fr_1.15fr] sm:gap-6"
+              >
+                <p className="text-[15px] font-semibold leading-snug tracking-[-0.01em] text-ink">
+                  {clause.title}
+                </p>
+                <p className="text-sm leading-relaxed text-ink-2">{clause.body}</p>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <Reveal delay={0.12}>
-          <div className="mt-14">
-            <div className="flex items-baseline justify-between gap-4">
-              <p className="label">default configuration</p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
-                configurable via env
-              </p>
-            </div>
-            <dl className="mt-4 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-              {SPEC.map(([key, value]) => (
-                <div key={key} className="bg-surface px-5 py-4">
-                  <dt className="label">{key}</dt>
-                  <dd className="mt-2 font-mono text-sm tracking-tight text-ink">
-                    {value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </Reveal>
+        <div className="flex items-start justify-center lg:pt-10">
+          <Receipt />
+        </div>
       </div>
     </section>
   );

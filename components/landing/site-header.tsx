@@ -26,27 +26,27 @@ export function SiteHeader({
   return (
     <header
       className={[
-        "sticky top-0 z-40 border-b transition-colors duration-200",
+        "sticky top-0 z-40 border-b transition-[background-color,border-color] duration-200",
         scrolled
-          ? "border-line bg-canvas/85 backdrop-blur-md"
-          : "border-transparent bg-transparent",
+          ? "border-line bg-canvas/95 backdrop-blur-md"
+          : "border-transparent bg-canvas/80 backdrop-blur-sm",
       ].join(" ")}
     >
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="rounded-md" aria-label="Dropwire home">
+      <div className="mx-auto flex h-16 w-full max-w-[1400px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-12">
+        <Link href="/" className="rounded-[3px]" aria-label="Dropwire home">
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-7 md:flex" aria-label="Primary">
           <a
             href="#how"
-            className="text-sm text-ink-2 transition-colors hover:text-ink"
+            className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-2 underline-offset-4 transition-colors hover:text-ink hover:underline"
           >
-            How it works
+            Protocol
           </a>
           <a
             href="#privacy"
-            className="text-sm text-ink-2 transition-colors hover:text-ink"
+            className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-2 underline-offset-4 transition-colors hover:text-ink hover:underline"
           >
             Privacy
           </a>
@@ -55,11 +55,16 @@ export function SiteHeader({
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <span className="hidden sm:inline-flex">
-            <Button variant="secondary" size="sm" onClick={onJoin}>
+            <Button variant="ghost" size="sm" onClick={onJoin}>
               Join a room
             </Button>
           </span>
-          <Button variant="primary" size="sm" onClick={onCreate} icon={<ArrowUpRight className="size-3.5" aria-hidden />}>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onCreate}
+            icon={<ArrowUpRight className="size-3.5" aria-hidden />}
+          >
             Create room
           </Button>
         </div>

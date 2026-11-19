@@ -2,28 +2,31 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { AlertTriangle, KeyRound, Lock, Loader2 } from "lucide-react";
+import { AlertTriangle, KeyRound, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 
 export function RoomLoading({ roomId }: { roomId: string }) {
   return (
     <main className="flex min-h-dvh items-center justify-center px-4">
-      <div className="panel w-full max-w-sm p-8 text-center">
-        <Loader2
-          className="mx-auto size-5 animate-spin text-brand"
-          aria-hidden
-        />
-        <p className="mt-4 text-sm font-medium text-ink">
-          Joining room <span className="font-mono tracking-[0.14em]">{roomId}</span>
-        </p>
-        <p className="mt-1 text-sm text-ink-2">
-          Negotiating a direct connection…
-        </p>
-        <div className="mt-6 flex items-center justify-center gap-2 border-t border-line pt-5">
-          <span className="size-1.5 rounded-full bg-brand animate-pulse-dot" aria-hidden />
-          <span className="label">secure · no account</span>
+      <div className="w-full max-w-sm border border-line bg-surface p-6">
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
+          <span className="size-1.5 bg-brand-text animate-blink" aria-hidden />
+          opening the wire
         </div>
+
+        <p className="mt-5 font-mono text-xl tracking-[0.1em] text-ink">{roomId}</p>
+
+        <div className="mt-4 flex h-2 items-center gap-1" aria-hidden>
+          <span className="h-full flex-1 bg-surface-2" />
+          <span className="h-full flex-1 bg-surface-2" />
+          <span className="h-full flex-1 bg-surface-2" />
+          <span className="h-full flex-1 bg-brand" />
+        </div>
+
+        <p className="mt-4 font-mono text-[11px] leading-relaxed text-ink-2">
+          Joining the room and negotiating a direct connection.
+        </p>
       </div>
     </main>
   );
@@ -40,7 +43,7 @@ const ERROR_COPY: Record<string, { title: string; body: string }> = {
   },
   full: {
     title: "This room is full.",
-    body: "Only the room's device limit can join at once. Ask them to leave and try again.",
+    body: "The room is at its device limit. Ask one of them to leave and try again.",
   },
   invalid: {
     title: "That room code isn't valid.",
@@ -56,7 +59,7 @@ const ERROR_COPY: Record<string, { title: string; body: string }> = {
   },
   network: {
     title: "Can't reach the signaling server.",
-    body: "Check your connection — the server only handles handshakes, your files never left this device.",
+    body: "Check your connection. The server only handles handshakes — your files never left this device.",
   },
   timeout: {
     title: "The server took too long to answer.",
@@ -80,14 +83,12 @@ export function RoomErrorState({
   const retryable = code === "network" || code === "timeout";
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 px-4">
-      <div className="panel w-full max-w-md p-7">
-        <span className="flex size-10 items-center justify-center rounded-full border border-danger/35 bg-danger-soft text-danger">
-          <AlertTriangle className="size-5" aria-hidden />
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-5 px-4">
+      <div className="w-full max-w-md border border-line bg-surface p-6">
+        <span className="flex size-9 items-center justify-center border border-danger/35 bg-danger-soft text-danger">
+          <AlertTriangle className="size-4" aria-hidden />
         </span>
-        <h1 className="mt-4 text-xl font-semibold tracking-tight text-ink">
-          {copy.title}
-        </h1>
+        <h1 className="display mt-4 text-[26px] text-ink">{copy.title}</h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-2">{copy.body}</p>
 
         <div className="mt-6 flex flex-wrap gap-2 border-t border-line pt-5">
@@ -97,15 +98,11 @@ export function RoomErrorState({
             </Button>
           ) : null}
           <Link href="/">
-            <Button variant={retryable ? "secondary" : "primary"}>
-              Back home
-            </Button>
+            <Button variant={retryable ? "secondary" : "primary"}>Back home</Button>
           </Link>
         </div>
       </div>
-      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
-        error: {code}
-      </p>
+      <p className="font-mono text-[10px] text-ink-3">error: {code}</p>
     </main>
   );
 }
@@ -129,17 +126,17 @@ export function PasswordGate({
   };
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 px-4">
-      <div className="panel w-full max-w-md p-7">
-        <span className="flex size-10 items-center justify-center rounded-full border border-line-strong bg-surface-2 text-brand">
-          <KeyRound className="size-5" aria-hidden />
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-5 px-4">
+      <div className="w-full max-w-md border border-line bg-surface p-6">
+        <span className="flex size-9 items-center justify-center border border-line-strong bg-surface-2 text-ink">
+          <KeyRound className="size-4" aria-hidden />
         </span>
-        <h1 className="mt-4 text-xl font-semibold tracking-tight text-ink">
+        <h1 className="display mt-4 text-[26px] text-ink">
           This room has a password.
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-2">
-          Enter the password the host shared with you. It is checked locally
-          against a hash — nobody can read it afterwards.
+          Enter the password the host shared with you. The server only compares a
+          hash it stored for this room.
         </p>
 
         <form className="mt-5 space-y-4" onSubmit={submit}>
@@ -173,8 +170,8 @@ export function PasswordGate({
           </Button>
         </form>
 
-        <p className="mt-5 border-t border-line pt-4 text-[12px] text-ink-3">
-          Rooms without a password skip this step.
+        <p className="mt-5 border-t border-line pt-4 font-mono text-[10px] text-ink-3">
+          rooms without a password skip this step
         </p>
       </div>
 

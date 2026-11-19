@@ -6,9 +6,10 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
       <input
         ref={ref}
         className={[
-          "h-10 w-full rounded-md border border-line bg-surface px-3 text-sm text-ink",
-          "placeholder:text-ink-3 transition-colors",
+          "h-10 w-full rounded-[3px] border border-line bg-surface px-3 text-sm text-ink",
+          "placeholder:text-ink-3 transition-[border-color,box-shadow] duration-150",
           "hover:border-line-strong focus:border-brand focus:outline-none",
+          "focus:shadow-[0_0_0_3px_var(--brand-soft)]",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           className,
         ].join(" ")}
@@ -26,8 +27,10 @@ export const Textarea = forwardRef<
     <textarea
       ref={ref}
       className={[
-        "w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink",
-        "placeholder:text-ink-3 transition-colors focus:border-brand focus:outline-none",
+        "w-full rounded-[3px] border border-line bg-surface px-3 py-2 text-sm text-ink",
+        "placeholder:text-ink-3 transition-[border-color,box-shadow] duration-150",
+        "hover:border-line-strong focus:border-brand focus:outline-none",
+        "focus:shadow-[0_0_0_3px_var(--brand-soft)]",
         className,
       ].join(" ")}
       {...rest}

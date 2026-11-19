@@ -8,6 +8,8 @@ import { TransferRow, isActive, isTerminal } from "./transfer-row";
 
 export function TransferQueue({
   items,
+  heading = "transfers",
+  showBulk = true,
   onPause,
   onResume,
   onCancel,
@@ -18,6 +20,8 @@ export function TransferQueue({
   onClearFinished,
 }: {
   items: TransferItem[];
+  heading?: string;
+  showBulk?: boolean;
   onPause: (id: string) => void;
   onResume: (id: string) => void;
   onCancel: (id: string) => void;
@@ -35,16 +39,18 @@ export function TransferQueue({
 
   return (
     <section className="panel overflow-hidden" aria-label="Transfers">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3 sm:px-5">
-        <div className="flex items-center gap-3">
-          <span className="label">transfers</span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2.5 sm:px-5">
+        <div className="flex items-baseline gap-3">
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-2">
+            {heading}
+          </span>
+          <span className="font-mono text-[10px] text-ink-3">
             {items.length} {items.length === 1 ? "file" : "files"}
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
-          {hasPaused ? (
+        <div className="flex flex-wrap items-center gap-1">
+          {!showBulk ? null : hasPaused ? (
             <Button
               variant="quiet"
               size="sm"
@@ -63,7 +69,7 @@ export function TransferQueue({
               Pause all
             </Button>
           ) : null}
-          {hasFinished ? (
+          {showBulk && hasFinished ? (
             <Button
               variant="quiet"
               size="sm"
@@ -85,7 +91,7 @@ export function TransferQueue({
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, height: 0, marginTop: 0 }}
-              transition={{ duration: 0.18 }}
+              transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
               className="[&>div]:border-0"
             >
               <TransferRow

@@ -73,7 +73,7 @@ export function CreateRoomDialog({
                 aria-checked={access === "open"}
                 onClick={() => setAccess("open")}
                 className={[
-                  "flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors",
+                  "flex flex-col items-start gap-1 rounded-[3px] border p-3 text-left transition-colors",
                   access === "open"
                     ? "border-brand bg-brand-soft"
                     : "border-line bg-surface hover:border-line-strong",
@@ -89,7 +89,7 @@ export function CreateRoomDialog({
                 aria-checked={access === "password"}
                 onClick={() => setAccess("password")}
                 className={[
-                  "flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors",
+                  "flex flex-col items-start gap-1 rounded-[3px] border p-3 text-left transition-colors",
                   access === "password"
                     ? "border-brand bg-brand-soft"
                     : "border-line bg-surface hover:border-line-strong",

@@ -40,7 +40,6 @@ export function RoomScreen({ roomId }: { roomId: string }) {
     if (errorCode === "password_incorrect") forgetRoomSecret(roomId);
   }, [errorCode, roomId]);
 
-  // A fresh round of completions re-arms the summary banner.
   const activeCount = state.transfers.filter(isActive).length;
   const prevActive = useRef<number | null>(null);
   useEffect(() => {
@@ -97,17 +96,18 @@ export function RoomScreen({ roomId }: { roomId: string }) {
       ? "direct"
       : "unknown";
 
+  const outgoing = state.transfers.filter((item) => item.direction === "out");
+  const incoming = state.transfers.filter((item) => item.direction === "in");
   const completed = state.transfers.filter((item) => item.status === "complete");
-  const showSummary =
-    !summaryHidden && completed.length > 0 && activeCount === 0;
+  const showSummary = !summaryHidden && completed.length > 0 && activeCount === 0;
 
   const handleFiles = (files: File[]) => {
     const queuedFor = actions.sendFiles(files);
     if (queuedFor === 0) {
       actions.notify(
         "info",
-        "No one has joined yet.",
-        "Share the link or QR code — your files start moving the moment another device joins.",
+        "Nobody is connected yet.",
+        "Share the room ticket. Your files leave the moment a second device joins.",
       );
     } else {
       setSummaryHidden(false);
@@ -115,7 +115,7 @@ export function RoomScreen({ roomId }: { roomId: string }) {
   };
 
   return (
-    <div className="noise-field min-h-dvh">
+    <div className="min-h-dvh">
       <RoomHeader
         roomId={roomId}
         link={state.link}
@@ -126,100 +126,124 @@ export function RoomScreen({ roomId }: { roomId: string }) {
         onLeave={leave}
       />
 
-      <main className="mx-auto grid w-full max-w-6xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 lg:py-6">
-        <div className="flex min-w-0 flex-col gap-5">
-          <ConnectionBanner
-            link={state.link}
-            peerName={firstPeerName}
-            onRetry={() => actions.retryConnection()}
+      <main className="mx-auto w-full max-w-[1400px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+        <ConnectionBanner
+          link={state.link}
+          peerName={firstPeerName}
+          onRetry={() => actions.retryConnection()}
+        />
+
+        <IncomingPanel
+          offers={state.incoming}
+          onAccept={(id) => void actions.acceptIncoming(id)}
+          onReject={actions.rejectIncoming}
+        />
+
+        {showSummary ? (
+          <CompletionBanner items={completed} onDismiss={() => setSummaryHidden(true)} />
+        ) : null}
+
+        <div className="relative mt-6 grid gap-9 lg:grid-cols-2 lg:gap-0">
+          <span
+            aria-hidden
+            className="seam absolute inset-y-0 left-1/2 hidden w-px lg:block"
           />
 
-          <IncomingPanel
-            offers={state.incoming}
-            onAccept={(id) => void actions.acceptIncoming(id)}
-            onReject={actions.rejectIncoming}
-          />
+          <section
+            aria-label="Send from this device"
+            className={[
+              "min-w-0 lg:pr-9",
+              hasPeers ? "" : "order-2 lg:order-none",
+            ].join(" ")}
+          >
+            <div className="flex items-baseline justify-between gap-3 border-b border-line pb-2">
+              <h2 className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-2">
+                send from this device
+              </h2>
+              <span className="font-mono text-[10px] text-ink-3">
+                {outgoing.length} outgoing
+              </span>
+            </div>
 
-          {showSummary ? (
-            <CompletionBanner
-              items={completed}
-              onDismiss={() => setSummaryHidden(true)}
-            />
-          ) : null}
+            <div className="mt-5 space-y-5">
+              <DropZone
+                ready={hasPeers}
+                waitingLabel="Share the room ticket first — the pad opens as soon as a second device joins."
+                onFiles={handleFiles}
+              />
 
-          {!hasPeers ? (
-            <SharePanel
-              roomId={roomId}
-              variant="hero"
-              waiting
-              peerCount={peerCount}
-              onShowQr={() => setQrOpen(true)}
-            />
-          ) : null}
+              <TransferQueue
+                heading="outgoing"
+                items={outgoing}
+                onPause={actions.pauseTransfer}
+                onResume={actions.resumeTransfer}
+                onCancel={actions.cancelTransfer}
+                onRetry={actions.retryTransfer}
+                onDismiss={actions.dismissTransfer}
+                onPauseAll={actions.pauseAll}
+                onResumeAll={actions.resumeAll}
+                onClearFinished={actions.dismissFinished}
+              />
 
-          <DropZone
-            ready={hasPeers}
-            waitingLabel="Share the link or QR code — drop files the moment another device joins."
-            onFiles={handleFiles}
-          />
+              {hasPeers && outgoing.length === 0 ? (
+                <p className="font-mono text-[10px] text-ink-3">
+                  outgoing queue empty — drop a file to start
+                </p>
+              ) : null}
+            </div>
+          </section>
 
-          <TransferQueue
-            items={state.transfers}
-            onPause={actions.pauseTransfer}
-            onResume={actions.resumeTransfer}
-            onCancel={actions.cancelTransfer}
-            onRetry={actions.retryTransfer}
-            onDismiss={actions.dismissTransfer}
-            onPauseAll={actions.pauseAll}
-            onResumeAll={actions.resumeAll}
-            onClearFinished={actions.dismissFinished}
-          />
+          <section
+            aria-label="The room"
+            className={[
+              "min-w-0 lg:pl-9",
+              hasPeers ? "" : "order-1 lg:order-none",
+            ].join(" ")}
+          >
+            <div className="flex items-baseline justify-between gap-3 border-b border-line pb-2">
+              <h2 className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-2">
+                the room
+              </h2>
+              <span className="font-mono text-[10px] text-ink-3">
+                {peerCount + 1} devices
+              </span>
+            </div>
 
-          {hasPeers && state.transfers.length === 0 ? (
-            <p className="text-center font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">
-              queue empty · ready to send
-            </p>
-          ) : null}
+            <div className="mt-5 space-y-5">
+              <SharePanel
+                roomId={roomId}
+                waiting={!hasPeers}
+                peerCount={peerCount}
+                onShowQr={() => setQrOpen(true)}
+              />
+
+              <Participants
+                peers={state.peers}
+                snapshot={state.snapshot}
+                onRenameLocal={actions.updateLocalName}
+              />
+
+              <TransferQueue
+                heading="incoming"
+                showBulk={false}
+                items={incoming}
+                onPause={actions.pauseTransfer}
+                onResume={actions.resumeTransfer}
+                onCancel={actions.cancelTransfer}
+                onRetry={actions.retryTransfer}
+                onDismiss={actions.dismissTransfer}
+                onPauseAll={actions.pauseAll}
+                onResumeAll={actions.resumeAll}
+                onClearFinished={actions.dismissFinished}
+              />
+            </div>
+          </section>
         </div>
 
-        <aside className="flex flex-col gap-5">
-          {hasPeers ? (
-            <SharePanel
-              roomId={roomId}
-              variant="compact"
-              waiting={false}
-              peerCount={peerCount}
-              onShowQr={() => setQrOpen(true)}
-            />
-          ) : null}
-
-          <Participants
-            peers={state.peers}
-            snapshot={state.snapshot}
-            onRenameLocal={actions.updateLocalName}
-          />
-
-          <section className="panel p-4" aria-label="Privacy summary">
-            <div className="flex items-center justify-between">
-              <span className="label">server sees</span>
-              <ShieldCheck className="size-3.5 text-live" aria-hidden />
-            </div>
-            <ul className="mt-3 space-y-2 font-mono text-[11px] text-ink-2">
-              <li className="flex justify-between border-b border-line pb-2">
-                <span>room code + state</span>
-                <span className="text-ink-3">yes</span>
-              </li>
-              <li className="flex justify-between border-b border-line pb-2">
-                <span>sdp / ice handshake</span>
-                <span className="text-ink-3">yes</span>
-              </li>
-              <li className="flex justify-between">
-                <span>file bytes</span>
-                <span className="text-live">never</span>
-              </li>
-            </ul>
-          </section>
-        </aside>
+        <p className="mt-8 flex items-center gap-2 border-t border-line pt-4 font-mono text-[10px] text-ink-3">
+          <ShieldCheck className="size-3.5 text-live" aria-hidden />
+          file bytes never reach the server — only this room code and the handshake
+        </p>
       </main>
 
       <Notices notices={state.notices} onDismiss={actions.dismissNotice} />

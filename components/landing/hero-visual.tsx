@@ -1,80 +1,110 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useReducedMotion } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 
-type Packet = { active: boolean; t: number; speed: number; size: number };
+type Packet = { active: boolean; t: number; speed: number };
 
-const MAX_PACKETS = 10;
+const MAX_PACKETS = 9;
 const PACKET_SLOTS = Array.from({ length: MAX_PACKETS }, (_, index) => index);
-const AUTO_SPAWN_MS = 2200;
+const AUTO_SPAWN_MS = 2400;
+const BASE_TILT_X = 8;
 
-function BrowserCard({
+function Terminal({
   label,
-  caption,
-  align,
+  note,
+  reversed = false,
+  tilt,
 }: {
   label: string;
-  caption: string;
-  align: "left" | "right";
+  note: string;
+  reversed?: boolean;
+  tilt?: string;
 }) {
   return (
-    <div className="flex min-w-0 flex-col gap-2">
-      <span className="label flex items-center gap-1.5">
-        <span className="inline-block size-1.5 rounded-full bg-brand" aria-hidden />
-        {label}
-      </span>
-      <div className="w-full rounded-lg border border-line bg-surface p-2.5 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
-        <div className="mb-2 flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-line-strong" aria-hidden />
-          <span className="size-1.5 rounded-full bg-line-strong" aria-hidden />
-          <span className="size-1.5 rounded-full bg-line-strong" aria-hidden />
-          <span className="ml-1 h-1.5 flex-1 rounded-full bg-surface-2" aria-hidden />
+    <div className="w-full" style={{ transformStyle: "preserve-3d" }}>
+      <div className="flex items-baseline justify-between gap-2 font-mono text-[10px] uppercase tracking-[0.14em]">
+        <span className="text-chassis-ink/70">{label}</span>
+        <span className="text-chassis-ink/35">{note}</span>
+      </div>
+
+      <div
+        style={{ transform: tilt }}
+        className={[
+          "mt-2 border border-white/30 bg-white/[0.05]",
+          "shadow-[0_26px_50px_-22px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.12)]",
+        ].join(" ")}
+      >
+        <div className="flex items-center gap-1.5 border-b border-white/15 bg-white/[0.04] px-2 py-1.5">
+          <span className="size-1.5 bg-white/25" aria-hidden />
+          <span className="size-1.5 bg-white/25" aria-hidden />
+          <span className="size-1.5 bg-white/25" aria-hidden />
+          <span className="ml-auto h-1.5 w-8 bg-white/10" aria-hidden />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 p-2.5">
+          <div className="h-1.5 w-2/3 bg-white/15" aria-hidden />
+          <div className="h-1.5 w-1/3 bg-white/10" aria-hidden />
           <div
-            className={`h-1.5 rounded-full bg-surface-2 ${align === "right" ? "w-1/2 self-end" : "w-3/4"}`}
-          />
-          <div
-            className={`h-1.5 rounded-full bg-surface-2 ${align === "right" ? "w-2/3 self-end" : "w-1/2"}`}
-          />
-          <div className="h-4 w-full rounded border border-dashed border-line" />
+            className={[
+              "mt-2 flex items-center gap-2 border border-dashed border-white/30 px-1.5 py-1.5",
+              reversed ? "flex-row-reverse" : "",
+            ].join(" ")}
+          >
+            <span className="size-3 shrink-0 border border-white/40 bg-lamp/25" aria-hidden />
+            <span className="h-1 w-8 bg-white/25" aria-hidden />
+          </div>
         </div>
       </div>
-      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
-        {caption}
-      </span>
     </div>
   );
 }
 
 /**
- * The hero schematic: two browsers wired directly together. Packets fly across
- * when you move over it or click it — the same route your files take.
+ * The console in the hero's other half: two terminals on a floor plane with
+ * the wire between them. It reads as a small physical diorama — the scene
+ * tilts toward the pointer and the bytes keep moving regardless.
  */
 export function HeroVisual() {
   const reduced = useReducedMotion();
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const pathRef = useRef<SVGPathElement>(null);
+  const figureRef = useRef<HTMLElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const wireRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<Array<SVGGElement | null>>([]);
   const packets = useRef<Packet[] | null>(null);
+  const frameRef = useRef<number | null>(null);
+  const lastSpawn = useRef(0);
+  const [orientation, setOrientation] = useState<"row" | "column">("row");
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  const rotateX = useSpring(BASE_TILT_X, { stiffness: 90, damping: 18, mass: 0.6 });
+  const rotateY = useSpring(0, { stiffness: 90, damping: 18, mass: 0.6 });
+
+  // The console lays back as the page scrolls past: the camera leaves it behind.
+  const { scrollYProgress } = useScroll({
+    target: figureRef,
+    offset: ["start start", "end start"],
+  });
+  const sceneRotateX = useTransform(scrollYProgress, [0, 1], [0, 15]);
+  const sceneY = useTransform(scrollYProgress, [0, 1], [0, -28]);
+  const sceneScale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
+
   const packetList = (): Packet[] => {
     if (!packets.current) {
       packets.current = Array.from({ length: MAX_PACKETS }, () => ({
         active: false,
         t: 0,
         speed: 0.5,
-        size: 1,
       }));
     }
     return packets.current;
   };
-  const frameRef = useRef<number | null>(null);
-  const lastSpawn = useRef(0);
-  const [orientation, setOrientation] = useState<"row" | "column">("row");
-  const [size, setSize] = useState({ width: 0, height: 0 });
-  const [bursts, setBursts] = useState(0);
-  const [visible, setVisible] = useState(true);
 
   const startLoop = useCallback(() => {
     if (frameRef.current !== null || reduced) return;
@@ -88,73 +118,80 @@ export function HeroVisual() {
         if (!node) return;
         if (packet.active) {
           packet.t += packet.speed * dt;
-          if (packet.t >= 1.12) {
-            packet.active = false;
-          } else {
-            alive = true;
-          }
+          if (packet.t >= 1.12) packet.active = false;
+          else alive = true;
         }
         const t = Math.max(0, Math.min(1, packet.t));
         const fadeIn = Math.min(1, packet.t / 0.08);
         const fadeOut = Math.min(1, (1.12 - packet.t) / 0.14);
-        const opacity = packet.active ? Math.max(0, Math.min(fadeIn, fadeOut)) : 0;
-        node.style.opacity = String(opacity);
+        node.style.opacity = packet.active
+          ? String(Math.max(0, Math.min(fadeIn, fadeOut)))
+          : "0";
         if (orientation === "row") {
-          node.style.transform = `translate(${t * size.width}px, ${size.height / 2}px) scale(${packet.size})`;
+          node.style.transform = `translate(${t * size.width}px, ${size.height / 2}px)`;
         } else {
-          node.style.transform = `translate(${size.width / 2}px, ${t * size.height}px) scale(${packet.size})`;
+          node.style.transform = `translate(${size.width / 2}px, ${t * size.height}px)`;
         }
       });
-      if (alive && visible) {
-        frameRef.current = requestAnimationFrame(step);
-      } else {
-        frameRef.current = null;
-      }
+      frameRef.current = alive ? requestAnimationFrame(step) : null;
     };
     frameRef.current = requestAnimationFrame(step);
-  }, [orientation, reduced, size.height, size.width, visible]);
+  }, [orientation, reduced, size.height, size.width]);
 
-  const spawn = useCallback((count = 1, burst = false) => {
-    if (reduced) return;
-    let spawned = 0;
-    for (const packet of packetList()) {
-      if (spawned >= count) break;
-      if (packet.active) continue;
-      packet.active = true;
-      packet.t = burst ? -spawned * 0.12 : 0;
-      packet.speed = 0.45 + Math.random() * 0.35;
-      packet.size = burst ? 1.15 : 1;
-      spawned += 1;
-    }
-    startLoop();
-  }, [reduced, startLoop]);
-
+  const spawn = useCallback(
+    (count = 1, burst = false, from?: number) => {
+      if (reduced) return;
+      let spawned = 0;
+      for (const packet of packetList()) {
+        if (spawned >= count) break;
+        if (packet.active) continue;
+        packet.active = true;
+        packet.t =
+          from !== undefined
+            ? from + spawned * 0.05
+            : burst
+              ? -spawned * 0.1
+              : 0;
+        packet.speed = 0.42 + Math.random() * 0.32;
+        spawned += 1;
+      }
+      startLoop();
+    },
+    [reduced, startLoop],
+  );
 
   useEffect(() => {
-    const element = wrapRef.current;
-    if (!element) return;
+    const row = rowRef.current;
+    const wire = wireRef.current;
+    if (!row || !wire) return;
 
-    const update = () => {
-      const rect = element.getBoundingClientRect();
-      const nextOrientation: "row" | "column" = rect.width >= 520 ? "row" : "column";
-      setOrientation(nextOrientation);
-      setSize({
-        width: nextOrientation === "row" ? rect.width : rect.width,
-        height: nextOrientation === "row" ? rect.height : rect.height,
-      });
+    const measureRow = () => {
+      const rect = row.getBoundingClientRect();
+      setOrientation(rect.width >= 420 ? "row" : "column");
     };
-    update();
+    const measureWire = () => {
+      const rect = wire.getBoundingClientRect();
+      setSize({ width: rect.width, height: rect.height });
+    };
 
-    const observer = new ResizeObserver(update);
-    observer.observe(element);
-    return () => observer.disconnect();
+    measureRow();
+    measureWire();
+
+    const rowObserver = new ResizeObserver(measureRow);
+    rowObserver.observe(row);
+    const wireObserver = new ResizeObserver(measureWire);
+    wireObserver.observe(wire);
+
+    return () => {
+      rowObserver.disconnect();
+      wireObserver.disconnect();
+    };
   }, []);
 
   useEffect(() => {
     if (reduced) return;
     const interval = window.setInterval(() => {
-      if (document.hidden || !visible) return;
-      spawn(1);
+      if (!document.hidden) spawn(1);
     }, AUTO_SPAWN_MS);
     const onVisibility = () => {
       if (document.hidden && frameRef.current !== null) {
@@ -169,134 +206,232 @@ export function HeroVisual() {
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
       frameRef.current = null;
     };
-  }, [reduced, spawn, visible]);
-
-  useEffect(() => {
-    const element = wrapRef.current;
-    if (!element || typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
-      { threshold: 0.1 },
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  const path =
-    orientation === "row"
-      ? `M 0 ${size.height / 2} L ${size.width} ${size.height / 2}`
-      : `M ${size.width / 2} 0 L ${size.width / 2} ${size.height}`;
+  }, [reduced, spawn]);
 
   const horizontal = orientation === "row";
 
+  const handlePointer = (event: React.PointerEvent) => {
+    if (reduced || event.pointerType !== "mouse") return;
+    const element = sceneRef.current;
+    if (!element) return;
+    const rect = element.getBoundingClientRect();
+    const px = (event.clientX - rect.left) / rect.width - 0.5;
+    const py = (event.clientY - rect.top) / rect.height - 0.5;
+    rotateX.set(BASE_TILT_X - py * 6);
+    rotateY.set(px * 12);
+
+    const now = performance.now();
+    if (now - lastSpawn.current < 260) return;
+    lastSpawn.current = now;
+    spawn(1);
+  };
+
+  const resetTilt = () => {
+    rotateX.set(BASE_TILT_X);
+    rotateY.set(0);
+  };
+
+  /** Tap anywhere on the wire and the bytes leave from under your finger. */
+  const handleWire = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (reduced) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const along = horizontal
+      ? (event.clientX - rect.left) / rect.width
+      : (event.clientY - rect.top) / rect.height;
+    spawn(3, false, Math.min(0.9, Math.max(0.02, along)));
+  };
+
   return (
-    <figure className="relative">
-      <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
-        <span className="label">peer link · live</span>
-        <span className="label flex items-center gap-1.5 text-live">
-          <span className="size-1.5 rounded-full bg-live animate-pulse-dot" aria-hidden />
-          direct
+    <figure
+      ref={figureRef}
+      className="flex h-full flex-col bg-chassis text-chassis-ink"
+    >
+      <div className="flex items-center justify-between gap-3 border-b border-white/15 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.14em]">
+        <span className="text-chassis-ink/50">link console</span>
+        <span className="flex items-center gap-2 text-lamp">
+          <span className="size-1.5 bg-lamp animate-blink" aria-hidden />
+          live
         </span>
       </div>
 
-      <div
-        ref={wrapRef}
-        className="relative px-4 py-5 sm:px-6"
-        onPointerMove={() => {
-          const now = performance.now();
-          if (now - lastSpawn.current < 220) return;
-          lastSpawn.current = now;
-          spawn(1);
-        }}
-        onPointerDown={() => {
-          spawn(4, true);
-          setBursts((value) => value + 1);
-        }}
-      >
-        <div
-          className={`flex items-stretch gap-3 sm:gap-4 ${
-            horizontal ? "flex-row" : "flex-col"
-          }`}
-        >
-          <div className={horizontal ? "w-[30%] max-w-[190px]" : "w-full"}>
-            <BrowserCard label="you" caption="your browser" align="left" />
-          </div>
+      <div className="flex flex-1 flex-col justify-center overflow-hidden px-5 py-7 sm:px-7 sm:py-9">
+        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-chassis-ink/40">
+          room
+        </p>
+        <p className="mt-1 flex items-center font-mono text-[clamp(1.4rem,3.4vw,1.9rem)] tracking-[0.14em] text-lamp">
+          NOVA-7K2P
+          <span
+            aria-hidden
+            className="ml-2 inline-block h-[0.82em] w-[0.44em] bg-lamp/70 animate-blink"
+          />
+        </p>
 
-          <div className="relative min-h-24 flex-1">
-            <svg
-              className="absolute inset-0 size-full overflow-visible"
-              width="100%"
-              height="100%"
+        {/* The diorama: perspective on the frame, 3D on the scene. */}
+        <div className="mt-6 [perspective:1200px]">
+          <motion.div
+            style={
+              reduced
+                ? undefined
+                : {
+                    rotateX: sceneRotateX,
+                    y: sceneY,
+                    scale: sceneScale,
+                    transformStyle: "preserve-3d",
+                  }
+            }
+          >
+          <motion.div
+            ref={sceneRef}
+            onPointerMove={handlePointer}
+            onPointerLeave={resetTilt}
+            style={
+              reduced
+                ? { transformStyle: "preserve-3d" }
+                : { rotateX, rotateY, transformStyle: "preserve-3d" }
+            }
+            className="relative mt-1 py-6 [transform-style:preserve-3d]"
+          >
+            <div
               aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 h-44 w-[85%] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(closest-side,rgba(255,212,0,0.2),transparent)] [transform:translateZ(-80px)]"
+            />
+
+            <div
+              ref={rowRef}
+              className={[
+                "relative flex gap-3 sm:gap-4",
+                horizontal ? "flex-row items-center" : "flex-col",
+              ].join(" ")}
             >
-              <path
-                ref={pathRef}
-                d={path}
-                fill="none"
-                stroke="currentColor"
-                className="text-line-strong"
-                strokeWidth="1.5"
-                strokeDasharray="5 5"
-              />
-              <circle
-                cx={horizontal ? 0 : size.width / 2}
-                cy={horizontal ? size.height / 2 : 0}
-                r="3"
-                className="fill-brand"
-              />
-              <circle
-                cx={horizontal ? size.width : size.width / 2}
-                cy={horizontal ? size.height / 2 : size.height}
-                r="3"
-                className="fill-brand"
-              />
-              {PACKET_SLOTS.map((index) => (
-                <g
-                  key={index}
-                  ref={(node) => {
-                    nodeRefs.current[index] = node;
-                  }}
-                  style={{ opacity: 0 }}
+              <div
+                className={horizontal ? "w-[32%] max-w-[170px] shrink-0" : "w-full"}
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                <Terminal
+                  label="this browser"
+                  note="you"
+                  tilt={horizontal ? "translateZ(24px) rotateY(12deg)" : undefined}
+                />
+              </div>
+
+              <div
+                ref={wireRef}
+                onPointerDown={handleWire}
+                className={[
+                  "relative min-h-[88px] min-w-0 flex-1 cursor-pointer",
+                  horizontal ? "h-14" : "h-20",
+                ].join(" ")}
+              >
+                <svg
+                  className="absolute inset-0 size-full overflow-visible"
+                  width="100%"
+                  height="100%"
+                  aria-hidden
                 >
-                  <rect x="-5" y="-3.5" width="10" height="7" rx="2" className="fill-brand" />
-                </g>
-              ))}
-            </svg>
+                  <path
+                    d={
+                      horizontal
+                        ? `M 0 ${size.height / 2} L ${size.width} ${size.height / 2}`
+                        : `M ${size.width / 2} 0 L ${size.width / 2} ${size.height}`
+                    }
+                    fill="none"
+                    stroke="currentColor"
+                    className="text-lamp/45"
+                    strokeWidth="1.25"
+                    strokeDasharray="2 6"
+                    strokeLinecap="round"
+                  />
+                  <rect
+                    x={horizontal ? 0 : size.width / 2 - 3}
+                    y={horizontal ? size.height / 2 - 3 : 0}
+                    width="6"
+                    height="6"
+                    className="fill-lamp"
+                  />
+                  <rect
+                    x={horizontal ? size.width - 6 : size.width / 2 - 3}
+                    y={horizontal ? size.height / 2 - 3 : size.height - 6}
+                    width="6"
+                    height="6"
+                    className="fill-lamp"
+                  />
+                  {PACKET_SLOTS.map((index) => (
+                    <g
+                      key={index}
+                      ref={(node) => {
+                        nodeRefs.current[index] = node;
+                      }}
+                      style={{
+                        opacity: 0,
+                        filter: "drop-shadow(0 0 6px rgba(255, 212, 0, 0.75))",
+                      }}
+                    >
+                      {/* Isometric packet cube: three lit faces. */}
+                      <polygon
+                        points="0,-5 5,-2.5 0,0 -5,-2.5"
+                        className="fill-lamp"
+                      />
+                      <polygon
+                        points="-5,-2.5 0,0 0,5 -5,2.5"
+                        className="fill-lamp"
+                        opacity="0.55"
+                      />
+                      <polygon
+                        points="5,-2.5 0,0 0,5 5,2.5"
+                        className="fill-lamp"
+                        opacity="0.3"
+                      />
+                    </g>
+                  ))}
+                </svg>
 
-            <div
-              className={`absolute inset-0 flex items-center justify-center pointer-events-none ${
-                horizontal ? "" : "hidden"
-              }`}
-            >
-              <span className="rounded-full border border-line bg-canvas px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.18em] text-ink-3">
-                direct link
-              </span>
-            </div>
-            <div
-              className={`absolute inset-0 items-center justify-center pointer-events-none ${
-                horizontal ? "hidden" : "flex"
-              }`}
-            >
-              <span className="rounded-full border border-line bg-canvas px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.18em] text-ink-3">
-                direct link
-              </span>
-            </div>
-          </div>
+                <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 border border-white/25 bg-chassis px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-chassis-ink/60">
+                  direct
+                </span>
+              </div>
 
-          <div className={horizontal ? "w-[30%] max-w-[190px]" : "w-full"}>
-            <BrowserCard label="them" caption="their browser" align="right" />
+              <div
+                className={horizontal ? "w-[32%] max-w-[170px] shrink-0" : "w-full"}
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                <Terminal
+                  label="their browser"
+                  note="them"
+                  reversed
+                  tilt={horizontal ? "translateZ(24px) rotateY(-12deg)" : undefined}
+                />
+              </div>
+            </div>
+
+            {/* Floor plane: what makes the slabs sit on something. */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-[-58%] h-[74%] opacity-40 [transform:rotateX(74deg)] [transform-origin:center_bottom]"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(to right, rgba(247,246,238,0.22) 0 1px, transparent 1px 44px), repeating-linear-gradient(to bottom, rgba(247,246,238,0.22) 0 1px, transparent 1px 44px)",
+                maskImage: "linear-gradient(to top, black, transparent)",
+                WebkitMaskImage: "linear-gradient(to top, black, transparent)",
+              }}
+            />
+          </motion.div>
+          </motion.div>
+        </div>
+
+        <div className="mt-6">
+          <div className="ruler text-chassis-ink" aria-hidden />
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 font-mono text-[10px] text-chassis-ink/45">
+            <span>tap the wire · 64 KB frames, acked on arrival</span>
+            <button
+              type="button"
+              onClick={() => spawn(4, true)}
+              className="text-lamp underline decoration-dotted underline-offset-4 transition-colors hover:text-chassis-ink focus-visible:text-chassis-ink"
+            >
+              Send a burst
+            </button>
           </div>
         </div>
       </div>
-
-      <figcaption className="flex items-center justify-between gap-3 border-t border-line px-4 py-2.5">
-        <span className="text-[11px] text-ink-3">
-          Hover or click the link — files take the same route.
-        </span>
-        <span className="font-mono text-[10px] text-ink-3" aria-live="polite">
-          {bursts > 0 ? `${bursts} burst${bursts === 1 ? "" : "s"}` : "idle"}
-        </span>
-      </figcaption>
     </figure>
   );
 }

@@ -9,9 +9,22 @@ const PHASE_META: Record<PeerPhase, { label: string; dot: string; pulse?: boolea
   idle: { label: "present", dot: "bg-brand", pulse: true },
   connecting: { label: "connecting", dot: "bg-brand", pulse: true },
   connected: { label: "connected", dot: "bg-live" },
-  reconnecting: { label: "reconnecting", dot: "bg-brand", pulse: true },
+  reconnecting: { label: "reconnecting", dot: "bg-brand-text", pulse: true },
   failed: { label: "disconnected", dot: "bg-danger" },
 };
+
+function Node({ className = "", pulse = false }: { className?: string; pulse?: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={[
+        "absolute left-[15px] top-1/2 z-10 size-2 -translate-y-1/2",
+        pulse ? "animate-blink" : "",
+        className,
+      ].join(" ")}
+    />
+  );
+}
 
 function SelfNameEditor({
   name,
@@ -29,7 +42,7 @@ function SelfNameEditor({
         <span className="truncate text-sm font-medium text-ink">{name}</span>
         <button
           type="button"
-          className="rounded p-1 text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          className="rounded-[2px] p-1 text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
           aria-label="Rename this device"
           onClick={() => {
             setDraft(name);
@@ -60,23 +73,21 @@ function SelfNameEditor({
           if (e.key === "Enter") commit();
           if (e.key === "Escape") setEditing(false);
         }}
-        className="w-full min-w-0 rounded-md border border-line bg-canvas px-2 py-1 text-sm text-ink outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/25"
+        className="w-full min-w-0 border border-line bg-canvas px-2 py-1 text-sm text-ink outline-none focus-visible:border-ink"
         aria-label="Device name"
       />
       <button
         type="button"
-        className="rounded p-1 text-live hover:bg-surface-2"
+        className="p-1 text-live hover:bg-surface-2"
         aria-label="Save device name"
         onClick={commit}
       >
         <Check className="size-3.5" aria-hidden />
       </button>
-      <span className="hidden font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3 sm:inline">
-        enter
-      </span>
+      <span className="hidden font-mono text-[10px] text-ink-3 sm:inline">enter</span>
       <button
         type="button"
-        className="rounded p-1 text-ink-3 hover:bg-surface-2 sm:hidden"
+        className="p-1 text-ink-3 hover:bg-surface-2 sm:hidden"
         aria-label="Cancel rename"
         onClick={() => setEditing(false)}
       >
@@ -104,19 +115,26 @@ export function Participants({
   );
 
   return (
-    <section className="panel" aria-label="Devices in this room">
-      <div className="flex items-center justify-between border-b border-line px-4 py-3">
-        <span className="label">devices</span>
-        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
+    <section className="border border-line bg-surface" aria-label="Devices in this room">
+      <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2">
+        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-2">
+          devices
+        </span>
+        <span className="font-mono text-[10px] text-ink-3">
           {peers.length + 1} present
         </span>
       </div>
 
-      <ul className="divide-y divide-line">
-        <li className="flex items-center gap-3 px-4 py-3">
-          <span className="size-2 shrink-0 rounded-full bg-live" aria-hidden />
+      <ul className="relative py-1">
+        <span
+          aria-hidden
+          className="absolute bottom-4 left-[19px] top-4 w-px bg-line-strong/50"
+        />
+
+        <li className="relative flex items-center gap-3 py-3 pl-9 pr-4">
+          <Node className="bg-brand" />
           <SelfNameEditor name={localName} onCommit={onRenameLocal} />
-          <span className="ml-auto shrink-0 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
+          <span className="ml-auto shrink-0 font-mono text-[10px] text-ink-3">
             this device
           </span>
         </li>
@@ -125,41 +143,38 @@ export function Participants({
           const meta = PHASE_META[peer.phase];
           const connected = peer.phase === "connected";
           return (
-            <li key={peer.id} className="flex items-center gap-3 px-4 py-3">
-              <span
-                className={`size-2 shrink-0 rounded-full ${meta.dot} ${meta.pulse ? "animate-pulse-dot" : ""}`}
-                aria-hidden
-              />
+            <li key={peer.id} className="relative flex items-center gap-3 py-3 pl-9 pr-4">
+              <Node className={meta.dot} pulse={meta.pulse} />
               <span className="min-w-0 truncate text-sm font-medium text-ink">
                 {peer.name}
               </span>
               {hostIds.has(peer.id) ? (
-                <Crown
-                  className="size-3.5 shrink-0 text-brand"
-                  aria-label="Room host"
-                />
+                <Crown className="size-3.5 shrink-0 text-brand-text" aria-label="Room host" />
               ) : null}
               <span className="ml-auto flex shrink-0 items-center gap-2">
                 {peer.phase === "connecting" || peer.phase === "reconnecting" ? (
-                  <Loader2
-                    className="size-3.5 animate-spin text-brand"
-                    aria-hidden
-                  />
+                  <Loader2 className="size-3.5 animate-spin text-brand-text" aria-hidden />
                 ) : null}
-                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
+                <span className="font-mono text-[10px] text-ink-3">
                   {connected ? routeLabel(peer.route) : meta.label}
                 </span>
               </span>
             </li>
           );
         })}
-      </ul>
 
-      {peers.length === 0 ? (
-        <p className="border-t border-line px-4 py-3 text-sm text-ink-2">
-          No one has joined yet — share the link or QR code.
-        </p>
-      ) : null}
+        {peers.length === 0 ? (
+          <li className="relative flex items-center gap-3 py-3 pl-9 pr-4">
+            <span
+              aria-hidden
+              className="absolute left-[15px] top-1/2 z-10 size-2 -translate-y-1/2 border border-line-strong bg-surface"
+            />
+            <p className="text-sm text-ink-2">
+              Open end. Share the room ticket to connect.
+            </p>
+          </li>
+        ) : null}
+      </ul>
     </section>
   );
 }

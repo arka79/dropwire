@@ -55,7 +55,7 @@ export function SettingsDialog({
             />
           </div>
 
-          <div className="flex items-center justify-between gap-4 rounded-lg border border-line bg-surface-2 px-4 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-[3px] border border-line bg-surface-2 px-4 py-3">
             <span className="flex items-center gap-2 text-sm text-ink">
               <Monitor className="size-4 text-ink-3" aria-hidden />
               Appearance
@@ -63,7 +63,7 @@ export function SettingsDialog({
             <ThemeToggle />
           </div>
 
-          <div className="flex gap-3 rounded-lg border border-line px-4 py-3">
+          <div className="flex gap-3 rounded-[3px] border border-line px-4 py-3">
             <ShieldCheck
               className="mt-0.5 size-4 shrink-0 text-live"
               aria-hidden

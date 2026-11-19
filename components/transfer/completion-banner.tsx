@@ -42,19 +42,20 @@ export function CompletionBanner({
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 8 }}
-        className="flex items-center justify-between gap-3 rounded-xl border border-live/35 bg-live-soft px-4 py-3 sm:px-5"
+        transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+        className="flex items-center justify-between gap-3 rounded-[3px] border border-live/30 bg-live-soft px-4 py-3 sm:px-5"
         role="status"
       >
         <div className="flex items-center gap-3">
-          <span className="flex size-8 items-center justify-center rounded-full border border-live/35 bg-surface text-live">
+          <span className="flex size-8 items-center justify-center rounded-full border border-live/30 bg-surface text-live">
             <CheckCheck className="size-4" aria-hidden />
           </span>
           <div>
             <p className="text-sm font-medium text-ink">{parts.join(" · ")}</p>
-            <p className="text-[12px] text-ink-2">
+            <p className="mt-0.5 font-mono text-[11px] text-ink-2">
               {awaitingDownload
-                ? "Your received files are still listed below — use Download to save them."
-                : "All bytes accounted for."}
+                ? "received files are still listed below — use Download to save them"
+                : "all bytes accounted for"}
             </p>
           </div>
         </div>

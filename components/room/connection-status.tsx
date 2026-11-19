@@ -10,13 +10,13 @@ export const LINK_META: Record<
   searching: {
     label: "waiting",
     dot: "bg-brand",
-    text: "text-brand",
+    text: "text-brand-text",
     pulse: true,
   },
   connecting: {
     label: "connecting",
     dot: "bg-brand",
-    text: "text-brand",
+    text: "text-brand-text",
     pulse: true,
   },
   connected: { label: "connected", dot: "bg-live", text: "text-live" },
@@ -28,8 +28,8 @@ export const LINK_META: Record<
   },
   reconnecting: {
     label: "reconnecting",
-    dot: "bg-brand",
-    text: "text-brand",
+    dot: "bg-brand-text",
+    text: "text-brand-text",
     pulse: true,
   },
   disconnected: { label: "disconnected", dot: "bg-danger", text: "text-danger" },
@@ -55,25 +55,26 @@ export function ConnectionPill({
   return (
     <div
       className={[
-        "inline-flex items-center gap-2 rounded-full border border-line bg-surface px-2.5 py-1",
-        compact ? "" : "sm:px-3",
+        "inline-flex items-center gap-2 border border-line bg-surface px-2 py-1",
+        compact ? "" : "sm:px-2.5",
       ].join(" ")}
       role="status"
       aria-live="polite"
     >
       <span
-        className={`size-2 rounded-full ${meta.dot} ${meta.pulse ? "animate-pulse-dot" : ""}`}
+        className={`size-1.5 ${meta.dot} ${meta.pulse ? "animate-blink" : ""}`}
         aria-hidden
       />
-      <span
-        className={`font-mono text-[10px] uppercase tracking-[0.16em] ${meta.text}`}
-      >
+      <span className={`font-mono text-[10px] uppercase tracking-[0.1em] ${meta.text}`}>
         {meta.label}
       </span>
       {showRoute ? (
-        <span className="hidden font-mono text-[10px] uppercase tracking-[0.16em] text-ink-3 sm:inline">
-          · {routeLabel(route)}
-        </span>
+        <>
+          <span className="hidden h-3 w-px bg-line sm:block" aria-hidden />
+          <span className="hidden font-mono text-[10px] uppercase tracking-[0.1em] text-ink-3 sm:inline">
+            {routeLabel(route)}
+          </span>
+        </>
       ) : null}
     </div>
   );
@@ -94,28 +95,26 @@ export function ConnectionBanner({
     <div
       role="alert"
       className={[
-        "animate-rise flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between",
-        failed
-          ? "border-danger/35 bg-danger-soft"
-          : "border-brand/35 bg-brand-soft",
+        "animate-rise flex flex-col gap-3 border p-4 sm:flex-row sm:items-center sm:justify-between",
+        failed ? "border-danger/35 bg-danger-soft" : "border-brand/40 bg-brand-soft",
       ].join(" ")}
     >
       <div className="flex gap-3">
         {failed ? (
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-danger" aria-hidden />
         ) : (
-          <WifiOff className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden />
+          <WifiOff className="mt-0.5 size-4 shrink-0 text-brand-text" aria-hidden />
         )}
         <div>
           <p className="text-sm font-medium text-ink">
             {failed
               ? "We couldn't keep a direct connection."
-              : "Connection interrupted — trying to reconnect…"}
+              : "Connection interrupted — reconnecting…"}
           </p>
-          <p className="mt-0.5 text-sm text-ink-2">
+          <p className="mt-0.5 text-sm leading-relaxed text-ink-2">
             {failed
-              ? `${peerName ?? "The other device"} and this browser can retry — transfers that were in flight are marked as interrupted.`
-              : "Transfers resume automatically when the link comes back."}
+              ? `${peerName ?? "The other device"} and this browser can retry. Transfers that were in flight are marked interrupted.`
+              : "The wire stays open while signaling recovers."}
           </p>
         </div>
       </div>

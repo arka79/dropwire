@@ -32,8 +32,8 @@ export const DialogContent = forwardRef<
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="fixed inset-0 z-50 bg-ink/25 backdrop-blur-[2px] dark:bg-black/60"
+              transition={{ duration: 0.16 }}
+              className="fixed inset-0 z-50 bg-ink/20 backdrop-blur-[3px] dark:bg-black/65"
             />
           </DialogPrimitive.Overlay>
         ) : null}
@@ -42,14 +42,14 @@ export const DialogContent = forwardRef<
         {open ? (
           <DialogPrimitive.Content asChild forceMount ref={ref} key="content" {...props}>
             <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.985 }}
+              initial={{ opacity: 0, y: 12, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 6, scale: 0.99 }}
-              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              exit={{ opacity: 0, y: 8, scale: 0.985 }}
+              transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
               className={[
                 "fixed left-1/2 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)]",
-                "max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl",
-                "border border-line bg-surface p-6 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.35)]",
+                "max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-md",
+                "border border-line bg-surface p-6 shadow-[0_28px_70px_-30px_rgba(0,0,0,0.45)]",
                 "focus:outline-none",
                 className,
               ].join(" ")}
@@ -57,7 +57,7 @@ export const DialogContent = forwardRef<
               {children}
               {hideClose ? null : (
                 <DialogPrimitive.Close
-                  className="absolute right-3 top-3 rounded-md p-1.5 text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink"
+                  className="absolute right-3.5 top-3.5 rounded-[3px] p-1.5 text-ink-3 transition-colors duration-150 hover:bg-surface-2 hover:text-ink"
                   aria-label="Close dialog"
                 >
                   <X className="size-4" aria-hidden />
@@ -81,9 +81,9 @@ export function DialogHeader({
   description?: string;
 }) {
   return (
-    <div className="mb-5 space-y-1.5 pr-8">
+    <div className="mb-5 space-y-2 pr-8">
       {eyebrow ? <p className="label">{eyebrow}</p> : null}
-      <DialogPrimitive.Title className="text-xl font-semibold tracking-tight text-ink">
+      <DialogPrimitive.Title className="text-[22px] font-semibold leading-tight tracking-[-0.02em] text-ink">
         {title}
       </DialogPrimitive.Title>
       {description ? (

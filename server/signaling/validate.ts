@@ -161,7 +161,7 @@ export function parseSignal(
   if (!to.value) return bad("invalid", "Signal target is required.");
 
   const data = body.data;
-  if (!data || typeof data !== "object") {
+  if (data !== null && data !== undefined && typeof data !== "object") {
     return bad("invalid", "Signal payload is required.");
   }
 
